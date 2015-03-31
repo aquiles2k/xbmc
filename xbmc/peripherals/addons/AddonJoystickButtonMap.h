@@ -31,9 +31,10 @@ namespace PERIPHERALS
   public:
     CAddonJoystickButtonMap(CPeripheral* device, const std::string& strDeviceId);
 
-    virtual ~CAddonJoystickButtonMap(void) { }
+    virtual ~CAddonJoystickButtonMap(void);
 
     // Implementation of IJoystickButtonMap
+    virtual std::string DeviceID(void) const { return m_strDeviceId; }
     virtual bool Load(void);
     virtual bool GetFeature(const CJoystickDriverPrimitive& primitive, unsigned int& featureIndex);
     virtual bool GetButton(unsigned int featureIndex, CJoystickDriverPrimitive& button);
@@ -44,18 +45,17 @@ namespace PERIPHERALS
                                                              int& zIndex, bool& zInverted);
 
   private:
-    typedef std::map<CJoystickDriverPrimitive, unsigned int> DriverMap;
+    typedef std::map<CJoystickDriverPrimitive, unsigned int> DriverMap; // driver primitive -> feature ID
 
     // Utility functions
-    static PeripheralAddonPtr GetAddon(const CPeripheral* device);
     static HatDirection       ToHatDirection(JOYSTICK_DRIVER_HAT_DIRECTION driverDirection);
     static SemiAxisDirection  ToSemiAxisDirection(JOYSTICK_DRIVER_SEMIAXIS_DIRECTION dir);
-    static DriverMap          GetDriverMap(const JoystickFeatureVector& features);
+    static DriverMap          GetDriverMap(const JoystickFeatureMap& features);
 
     CPeripheral* const       m_device;
+    const PeripheralAddonPtr m_addon;
     const std::string        m_strDeviceId;
-    PeripheralAddonPtr       m_addon;
-    JoystickFeatureVector    m_features;
+    JoystickFeatureMap       m_features;
     DriverMap                m_driverMap;
   };
 }

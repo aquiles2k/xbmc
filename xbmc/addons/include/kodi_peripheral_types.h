@@ -50,10 +50,10 @@
 #endif
 
 /* current Peripheral API version */
-#define PERIPHERAL_API_VERSION "1.0.2"
+#define PERIPHERAL_API_VERSION "1.0.3"
 
 /* min. Peripheral API version */
-#define PERIPHERAL_MIN_API_VERSION "1.0.2"
+#define PERIPHERAL_MIN_API_VERSION "1.0.3"
 
 /* indicates a joystick has no preference for port number */
 #define NO_PORT_REQUESTED     (-1)
@@ -81,7 +81,7 @@ extern "C"
 
   typedef enum PERIPHERAL_TYPE
   {
-    PERIPHERAL_TYPE_UNKNOWN = 0,
+    PERIPHERAL_TYPE_UNKNOWN,
     PERIPHERAL_TYPE_JOYSTICK,
   } PERIPHERAL_TYPE;
 
@@ -118,7 +118,7 @@ extern "C"
   ///{
   typedef enum PERIPHERAL_EVENT_TYPE
   {
-    PERIPHERAL_EVENT_TYPE_NONE = 0,       /*!< @brief unknown event */
+    PERIPHERAL_EVENT_TYPE_NONE,           /*!< @brief unknown event */
     PERIPHERAL_EVENT_TYPE_DRIVER_BUTTON,  /*!< @brief state changed for joystick driver button */
     PERIPHERAL_EVENT_TYPE_DRIVER_HAT,     /*!< @brief state changed for joystick driver hat */
     PERIPHERAL_EVENT_TYPE_DRIVER_AXIS,    /*!< @brief state changed for joystick driver axis */
@@ -172,7 +172,7 @@ extern "C"
 
   typedef enum JOYSTICK_DRIVER_TYPE
   {
-    JOYSTICK_DRIVER_TYPE_UNKNOWN = 0,
+    JOYSTICK_DRIVER_TYPE_UNKNOWN,
     JOYSTICK_DRIVER_TYPE_BUTTON,
     JOYSTICK_DRIVER_TYPE_HAT_DIRECTION,
     JOYSTICK_DRIVER_TYPE_SEMIAXIS,
@@ -187,7 +187,7 @@ extern "C"
 
   typedef enum JOYSTICK_DRIVER_HAT_DIRECTION
   {
-    JOYSTICK_DRIVER_HAT_UNKNOWN = 0,
+    JOYSTICK_DRIVER_HAT_UNKNOWN,
     JOYSTICK_DRIVER_HAT_LEFT,
     JOYSTICK_DRIVER_HAT_RIGHT,
     JOYSTICK_DRIVER_HAT_UP,
@@ -234,6 +234,7 @@ extern "C"
   typedef struct JOYSTICK_FEATURE
   {
     unsigned int                           id;
+    char*                                  feature_name;
     JOYSTICK_DRIVER_TYPE                   driver_type;
     union
     {
@@ -265,9 +266,9 @@ extern "C"
     ///{
     PERIPHERAL_ERROR (__cdecl* GetJoystickInfo)(unsigned int, JOYSTICK_INFO*);
     void             (__cdecl* FreeJoystickInfo)(JOYSTICK_INFO*);
-    PERIPHERAL_ERROR (__cdecl* GetButtonMap)(const JOYSTICK_INFO*, const char*, unsigned int*, JOYSTICK_FEATURE**);
+    PERIPHERAL_ERROR (__cdecl* GetButtonMap)(const PERIPHERAL_INFO*, const JOYSTICK_INFO*, const char*, unsigned int*, JOYSTICK_FEATURE**);
     void             (__cdecl* FreeButtonMap)(unsigned int, JOYSTICK_FEATURE*);
-    PERIPHERAL_ERROR (__cdecl* MapJoystickFeature)(const JOYSTICK_INFO*, const char*, JOYSTICK_FEATURE*);
+    PERIPHERAL_ERROR (__cdecl* MapJoystickFeature)(const PERIPHERAL_INFO*, const JOYSTICK_INFO*, const char*, JOYSTICK_FEATURE*);
     ///}
   } PeripheralAddon;
 

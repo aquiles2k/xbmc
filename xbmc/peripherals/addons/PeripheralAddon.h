@@ -23,13 +23,16 @@
 #include "addons/DllPeripheral.h"
 #include "addons/include/kodi_peripheral_types.h"
 #include "addons/include/kodi_peripheral_utils.hpp"
+#include "games/GameTypes.h"
 #include "input/joysticks/JoystickTypes.h"
 #include "peripherals/PeripheralTypes.h"
 #include "threads/Thread.h"
 
+#include <map>
 #include <memory>
 #include <vector>
 
+class IJoystickButtonMap;
 class IJoystickDriverHandler;
 
 namespace PERIPHERALS
@@ -41,8 +44,8 @@ namespace PERIPHERALS
   typedef std::shared_ptr<CPeripheralAddon> PeripheralAddonPtr;
   typedef std::vector<PeripheralAddonPtr>   PeripheralAddonVector;
 
-  typedef std::shared_ptr<ADDON::JoystickFeature> JoystickFeaturePtr;
-  typedef std::vector<JoystickFeaturePtr>         JoystickFeatureVector;
+  typedef std::shared_ptr<ADDON::JoystickFeature>    JoystickFeaturePtr;
+  typedef std::map<unsigned int, JoystickFeaturePtr> JoystickFeatureMap; // Feature ID -> feature
 
   class CPeripheralAddon : public ADDON::CAddonDll<DllPeripheral, PeripheralAddon, PERIPHERAL_PROPERTIES>
   {
@@ -56,12 +59,7 @@ namespace PERIPHERALS
     /*!
      * @brief Initialise the instance of this add-on
      */
-    ADDON_STATUS Create(void);
-
-    /*!
-     * @brief Destroy the instance of this add-on
-     */
-    void Destroy(void);
+    ADDON_STATUS CreateAddon(void);
 
     bool         Register(unsigned int peripheralIndex, CPeripheral* peripheral);
     void         UnregisterRemovedDevices(const PeripheralScanResults &results, std::vector<CPeripheral*>& removedPeripherals);
@@ -83,9 +81,12 @@ namespace PERIPHERALS
     /** @name Joystick methods */
     //@{
     bool SetJoystickProperties(unsigned int index, CPeripheralJoystick& joystick);
-    bool GetButtonMap(const CPeripheral* device, const std::string& strDeviceId, JoystickFeatureVector& features);
-    bool MapJoystickFeature(const CPeripheral* device, const std::string& strDeviceId, const JoystickFeaturePtr& feature);
+    bool GetButtonMap(const CPeripheral* device, const std::string& strDeviceId, JoystickFeatureMap& features);
+    bool MapJoystickFeature(const CPeripheral* device, const std::string& strDeviceId, const ADDON::JoystickFeature* feature);
     //@}
+
+    void RegisterButtonMap(CPeripheral* device, IJoystickButtonMap* buttonMap);
+    void UnregisterButtonMap(IJoystickButtonMap* buttonMap);
 
     static const char* ToString(PERIPHERAL_ERROR error);
 
@@ -97,7 +98,12 @@ namespace PERIPHERALS
     virtual bool CheckAPIVersion(void);
 
   private:
-    static void         GetJoystickInfo(const CPeripheral* device, ADDON::Joystick& joystickInfo);
+    static void GetJoystickInfo(const CPeripheral* device, ADDON::Joystick& joystickInfo);
+    static void GetPeripheralInfo(const CPeripheral* device, ADDON::Peripheral& peripheralInfo);
+
+    const GAME::GamePeripheralPtr& GetGamePeripheral(const std::string& strDeviceId);
+    int GetFeatureIndex(const std::string& strDeviceId, const std::string& featureName);
+
     static HatDirection ToHatDirection(JOYSTICK_STATE_HAT state);
 
     /*!
@@ -128,6 +134,11 @@ namespace PERIPHERALS
 
     /* peripherals */
     std::map<unsigned int, CPeripheral*>  m_peripherals;
+
+    std::vector<std::pair<CPeripheral*, IJoystickButtonMap*> > m_buttonMaps; // Button map observers
+
+    typedef std::string DeviceID;
+    std::map<DeviceID, GAME::GamePeripheralPtr> m_gamePeripherals;
 
     /* synchronization */
     CCriticalSection    m_critSection;

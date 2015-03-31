@@ -21,10 +21,10 @@
 #define KODI_GAME_TYPES_H_
 
 /* current game API version */
-#define GAME_API_VERSION                "1.0.0"
+#define GAME_API_VERSION                "1.0.3"
 
 /* min. game API version */
-#define GAME_MIN_API_VERSION            "1.0.0"
+#define GAME_MIN_API_VERSION            "1.0.3"
 
 /* magic number for empty tray */
 #define GAME_NO_DISK                   ((unsigned)-1)
@@ -96,7 +96,8 @@ typedef enum GAME_INPUT_EVENT_SOURCE
   GAME_INPUT_EVENT_ANALOG_STICK,
   GAME_INPUT_EVENT_ACCELEROMETER,
   GAME_INPUT_EVENT_KEY,
-  GAME_INPUT_EVENT_MOUSE,
+  GAME_INPUT_EVENT_RELATIVE_POINTER,
+  GAME_INPUT_EVENT_ABSOLUTE_POINTER,
 } GAME_INPUT_EVENT_SOURCE;
 
 /*! Returned from game_get_region() (TODO) */
@@ -239,58 +240,77 @@ typedef enum GAME_EJECT_STATE
   GAME_EJECTED
 } GAME_EJECT_STATE;
 
-typedef struct game_input_device_caps
+typedef struct game_input_device
 {
+  const char*  device_id;
   unsigned int digital_button_count;
   unsigned int analog_button_count;
   unsigned int analog_stick_count;
   unsigned int accelerometer_count;
   unsigned int key_count;
-  unsigned int mouse_count;
-} ATTRIBUTE_PACKED game_input_device_caps;
+  unsigned int rel_pointer_count;
+  unsigned int abs_pointer_count;
+} ATTRIBUTE_PACKED game_input_device;
+
+typedef struct game_digital_button_event
+{
+  bool         pressed;
+} ATTRIBUTE_PACKED game_digital_button_event;
+
+typedef struct game_analog_button_event
+{
+  float        magnitude;
+} ATTRIBUTE_PACKED game_analog_button_event;
+
+typedef struct game_analog_stick_event
+{
+  float        x;
+  float        y;
+} ATTRIBUTE_PACKED game_analog_stick_event;
+
+typedef struct game_accelerometer_event
+{
+  float        x;
+  float        y;
+  float        z;
+} ATTRIBUTE_PACKED game_accelerometer_event;
+
+typedef struct game_key_event
+{
+  bool         pressed;
+  uint32_t     character; // text character of the pressed key (UTF-32)
+  GAME_KEY_MOD modifiers;
+} ATTRIBUTE_PACKED game_key_event;
+
+typedef struct game_rel_pointer_event
+{
+  int          x;
+  int          y;
+} ATTRIBUTE_PACKED game_rel_pointer_event;
+
+typedef struct game_abs_pointer_event
+{
+  bool         pressed;
+  float        x;
+  float        y;
+} ATTRIBUTE_PACKED game_abs_pointer_event;
 
 typedef struct game_input_event
 {
   GAME_INPUT_EVENT_SOURCE type;
   int                     port;
-  unsigned int            source_index;
+  const char*             device_id;
+  unsigned int            feature_index;
+  const char*             feature_name;
   union
   {
-    struct
-    {
-      bool         pressed;
-    } digital_button;
-
-    struct
-    {
-      float        magnitude;
-    } analog_button;
-
-    struct
-    {
-      float        x;
-      float        y;
-    } analog_stick;
-
-    struct
-    {
-      float        x;
-      float        y;
-      float        z;
-    } accelerometer;
-
-    struct
-    {
-      bool         pressed;
-      uint32_t     character; // text character of the pressed key (UTF-32)
-      GAME_KEY_MOD modifiers;
-    } key;
-
-    struct
-    {
-      int          x;
-      int          y;
-    } mouse;
+    struct game_digital_button_event digital_button;
+    struct game_analog_button_event  analog_button;
+    struct game_analog_stick_event   analog_stick;
+    struct game_accelerometer_event  accelerometer;
+    struct game_key_event            key;
+    struct game_rel_pointer_event    rel_pointer;
+    struct game_abs_pointer_event    abs_pointer;
   };
 } ATTRIBUTE_PACKED game_input_event;
 
@@ -395,7 +415,7 @@ typedef struct GameClient
   GAME_ERROR  (__cdecl* UnloadGame)(void);
   GAME_ERROR  (__cdecl* Run)(void);
   GAME_ERROR  (__cdecl* Reset)(void);
-  void        (__cdecl* UpdatePort)(unsigned int port, bool port_connected);
+  void        (__cdecl* DeviceConnected)(unsigned int, bool, const struct game_input_device*);
   void        (__cdecl* InputEvent)(unsigned int port, game_input_event* event);
   GAME_ERROR  (__cdecl* GetSystemAVInfo)(struct game_system_av_info *info);
   size_t      (__cdecl* SerializeSize)(void);

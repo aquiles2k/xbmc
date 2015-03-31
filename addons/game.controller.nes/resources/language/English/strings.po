@@ -37,11 +37,11 @@ msgid "Select"
 msgstr ""
 
 msgctxt "#30005"
-msgid "D-pad"
+msgid "Up"
 msgstr ""
 
 msgctxt "#30006"
-msgid "Up"
+msgid "Down"
 msgstr ""
 
 msgctxt "#30007"
@@ -49,9 +49,5 @@ msgid "Right"
 msgstr ""
 
 msgctxt "#30008"
-msgid "Down"
-msgstr ""
-
-msgctxt "#30009"
 msgid "Left"
 msgstr ""
